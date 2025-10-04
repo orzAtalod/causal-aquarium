@@ -1,20 +1,47 @@
 use yew::prelude::*;
+use yew_hooks::use_interval;
 
-#[derive(PartialEq, Properties)]
-pub struct CircleTestProps {}
+#[function_component(ProgressBar)]
+fn progress_bar() -> Html {
+    let progress = use_state(|| 0.0);
 
-#[function_component]
-pub fn CircleTest(props: &CircleTestProps) -> Html {
-    let CircleTestProps {} = props;
+    use_interval(
+        {
+            let progress = progress.clone();
+            move || {
+                let new_progress = if *progress < 100.0 {
+                    *progress + 1.0
+                } else {
+                    *progress
+                };
+                progress.set(new_progress);
+            }
+        },
+        100,
+    );
+
+
+    html! {
+        <div style="width: 100%; padding: 20px;">
+            <div style="width: 100%; background-color: #f3f3f3; height: 30px; border-radius: 5px;">
+                <div style={format!("width: {}%; height: 100%; background-color: #4caf50; border-radius: 5px;", *progress)}>
+                </div>
+            </div>
+            <p>{format!("Progress: {:.0}%", *progress)}</p>
+        </div>
+    }
+}
+
+#[function_component(App)]
+fn app() -> Html {
     html! {
         <div>
-            <svg width="200" height="200">
-                <circle cx="100" cy="100" r="50" fill="blue" />
-            </svg>
+            <h1>{ "Progress Bar Example" }</h1>
+            <ProgressBar />
         </div>
     }
 }
 
 fn main() {
-    yew::Renderer::<CircleTest>::with_props(CircleTestProps {}).render();
+    yew::Renderer::<App>::new().render();
 }
