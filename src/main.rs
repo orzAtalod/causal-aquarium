@@ -46,4 +46,8 @@ fn app() -> Html {
 
 fn main() {
     yew::Renderer::<App>::new().render();
+
+    // make rust analyzer happy :(
+    let foobar = ou_process::OUState::new();
+    print!("{:?}", foobar);
 }
