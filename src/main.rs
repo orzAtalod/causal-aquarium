@@ -1,3 +1,5 @@
+mod ou_process;
+
 use yew::prelude::*;
 use yew_hooks::use_interval;
 
