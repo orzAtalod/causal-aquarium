@@ -1,24 +1,87 @@
+//mathematical provement for this part could be found in doc/OU_process.md (written in Chinese)
+//almost everything is public for simplicity
+use rand::Rng;
+use rand_distr::{Normal, Distribution};
+
+/// OU process variable struct
+/// val: [f64; 3] - the value of the variable
+/// varies from [0, 100] for each variant
 #[derive(Debug, Clone)]
 pub struct Var {
-
+    pub val: [f64; 3], //3-dimensional variable
 }
 
+/// OU process configuration struct
+/// theta: f64 - the speed of mean reversion
+/// sigma: f64 - the variance (sd^2)
+/// delta_t: f64 - the time step
+/// gamma: [[f64; 3]; 3] - the interaction matrix between the 3 variants
+/// the elements in the main diagonal of gamma should be 1.0
 #[derive(Debug, Clone)]
 pub struct Config {
-
+    pub theta: f64,
+    pub sigma: f64,
+    pub delta_t: f64,
+    pub gamma: [[f64; 3]; 3], //3x3 matrix, the element in main diag should be 1.0
 }
 
+/// OU process state struct
+/// config: Config - the configuration of the OU process
+/// var: Var - the variable of the OU process
+/// use function `update_ou_state` to update the state
 #[derive(Debug, Clone)]
 pub struct OUState {
     config: Config,
     var: Var,
 }
 
-impl OUState {
-    pub fn new() -> OUState {
-        OUState {
-            config : Config{},
-            var : Var{},
-        }
+/// calculate the L2 norm of a 3-dimensional vector
+/// requires each dimension is in range [0, 100]
+/// # Arguments
+/// * `v` - a 3-dimensional vector
+/// # Returns
+/// * `f64` - the L2 norm of the vector
+fn norm(v: [f64; 3]) -> f64 {
+    (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]).sqrt()
+}
+
+/// OU process state update function
+/// # Arguments
+/// * `os` - current OU process state
+/// # Returns
+/// * `OUState` - updated OU process state
+pub fn update_ou_state(os: OUState) -> OUState {
+    //calculate mu
+    let beta = - norm(os.var.val) / 100.0;
+    let gamma = os.config.gamma;
+    let old = os.var.val;
+    let mu: [f64; 3] = [
+        beta*old[0] + gamma[0][0]*old[0] + gamma[0][1]*old[1] + gamma[0][2]*old[2],
+        beta*old[1] + gamma[1][0]*old[0] + gamma[1][1]*old[1] + gamma[1][2]*old[2],
+        beta*old[2] + gamma[2][0]*old[0] + gamma[2][1]*old[1] + gamma[2][2]*old[2],
+    ];
+
+    //update var
+    let mut rng = rand::thread_rng();
+    let theta = os.config.theta;
+    let sigma = os.config.sigma;
+    let delta_t = os.config.delta_t;
+    let e_theta_dt = (-theta * delta_t).exp();
+
+    //NOTE: sigma here represents variance (sd²), not standard deviation.
+    let stddev = (sigma*(1.0-e_theta_dt*e_theta_dt)/2.0/theta).sqrt();
+    let normal = Normal::new(0.0, stddev).unwrap();
+
+    let new_var = Var {
+        val: [
+            mu[0] + (old[0] - mu[0]) * e_theta_dt + normal.sample(&mut rng),
+            mu[1] + (old[1] - mu[1]) * e_theta_dt + normal.sample(&mut rng),
+            mu[2] + (old[2] - mu[2]) * e_theta_dt + normal.sample(&mut rng)
+        ],
+    };
+
+    OUState {
+        config: os.config,
+        var: new_var,
     }
 }
