@@ -1,18 +1,20 @@
-mod ou_process;
-
 use yew::prelude::*;
 use yew_hooks::use_interval;
+use rand::{thread_rng, Rng};
+use rand_distr::{Normal, Distribution};
 
 #[function_component(ProgressBar)]
 fn progress_bar() -> Html {
     let progress = use_state(|| 0.0);
+    let normal = Normal::new(1.0, 0.3).unwrap();
+    let mut rng = thread_rng();
 
     use_interval(
         {
             let progress = progress.clone();
             move || {
                 let new_progress = if *progress < 100.0 {
-                    *progress + 1.0
+                    *progress + normal.sample(&mut rng)
                 } else {
                     *progress
                 };
@@ -46,8 +48,4 @@ fn app() -> Html {
 
 fn main() {
     yew::Renderer::<App>::new().render();
-
-    // make rust analyzer happy :(
-    let foobar = ou_process::OUState::new();
-    print!("{:?}", foobar);
 }
