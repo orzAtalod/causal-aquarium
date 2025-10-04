@@ -1,3 +1,5 @@
+use std::default;
+
 //mathematical provement for this part could be found in doc/OU_process.md (written in Chinese)
 //almost everything is public for simplicity
 use rand::Rng;
@@ -9,6 +11,13 @@ use rand_distr::{Normal, Distribution};
 #[derive(Debug, Clone)]
 pub struct Var {
     pub val: [f64; 3], //3-dimensional variable
+}
+
+/// default value is [50.0, 50.0, 50.0]
+impl default::Default for Var {
+    fn default() -> Self {
+        Var { val: [50.0, 50.0, 50.0] }
+    }
 }
 
 /// OU process configuration struct
@@ -25,14 +34,48 @@ pub struct Config {
     pub gamma: [[f64; 3]; 3], //3x3 matrix, the element in main diag should be 1.0
 }
 
+/// default value is:
+/// theta: 0.7,
+/// sigma: 0.3,
+/// delta_t: 1.0,
+/// gamma: [
+///     [1.0, 0.2, 0.1],
+///     [0.2, 1.0, 0.3],
+///     [0.1, 0.3, 1.0],
+/// ],
+impl default::Default for Config {
+    fn default() -> Self {
+        Config {
+            theta: 0.7,
+            sigma: 0.3,
+            delta_t: 1.0,
+            gamma: [
+                [1.0, 0.2, 0.1],
+                [0.2, 1.0, 0.3],
+                [0.1, 0.3, 1.0],
+            ],
+        }
+    }
+}
+
 /// OU process state struct
 /// config: Config - the configuration of the OU process
 /// var: Var - the variable of the OU process
 /// use function `update_ou_state` to update the state
 #[derive(Debug, Clone)]
 pub struct OUState {
-    config: Config,
-    var: Var,
+    pub config: Config,
+    pub var: Var,
+}
+
+/// default value is Config::default() and Var::default()
+impl default::Default for OUState {
+    fn default() -> Self {
+        OUState {
+            config: Config::default(),
+            var: Var::default(),
+        }
+    }
 }
 
 /// calculate the L2 norm of a 3-dimensional vector
