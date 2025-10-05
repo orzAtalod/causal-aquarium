@@ -1,7 +1,8 @@
-use std::default;
 /// Ornstein-Uhlenbeck (OU) process network implementation in Rust
 /// mathematical provement for this part could be found in `doc/OU_process.md` (written in Chinese)
 /// almost everything is public for simplicity
+/// last changed: Lin Jinghang, 4 October 2025
+use std::default;
 use rand::Rng;
 use rand_distr::{Normal, Distribution};
 
