@@ -6,20 +6,16 @@ use rand_distr::{Normal, Distribution};
 
 #[function_component(ProgressBar)]
 fn progress_bar() -> Html {
-    let progress = use_state(|| 0.0);
-    let normal = Normal::new(1.0, 0.3).unwrap();
-    let mut rng = thread_rng();
+    let ou_status = use_state(|| ou_process::OUState::default());
 
     use_interval(
         {
-            let progress = progress.clone();
+            let ou_status = ou_status.clone();
             move || {
-                let new_progress = if *progress < 100.0 {
-                    *progress + normal.sample(&mut rng)
-                } else {
-                    *progress
-                };
-                progress.set(new_progress);
+                // the type of ou_status is UseStateHandle<OUState>, which derefs to OUState
+                // the function `update_ou_state` takes &OUState as input
+                // so there's a deref + ref to get &OUState
+                ou_status.set(ou_process::update_ou_state(&*ou_status));
             }
         },
         100,
@@ -29,10 +25,19 @@ fn progress_bar() -> Html {
     html! {
         <div style="width: 100%; padding: 20px;">
             <div style="width: 100%; background-color: #f3f3f3; height: 30px; border-radius: 5px;">
-                <div style={format!("width: {}%; height: 100%; background-color: #4caf50; border-radius: 5px;", *progress)}>
+                <div style={format!("width: {}%; height: 100%; background-color: #4caf50; border-radius: 5px;", ou_status.var.val[0])}>
                 </div>
             </div>
-            <p>{format!("Progress: {:.0}%", *progress)}</p>
+            <div style="width: 100%; background-color: #f3f3f3; height: 30px; border-radius: 5px;">
+                <div style={format!("width: {}%; height: 100%; background-color: #af4c4cff; border-radius: 5px;", ou_status.var.val[1])}>
+                </div>
+            </div>
+            <div style="width: 100%; background-color: #f3f3f3; height: 30px; border-radius: 5px;">
+                <div style={format!("width: {}%; height: 100%; background-color: #4c54afff; border-radius: 5px;", ou_status.var.val[2])}>
+                </div>
+            </div>
+            
+            <p>{format!("A: {:.0}%, B: {:.0}%, C: {:.0}%", ou_status.var.val[0], ou_status.var.val[1], ou_status.var.val[2])}</p>
         </div>
     }
 }

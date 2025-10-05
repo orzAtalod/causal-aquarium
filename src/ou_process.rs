@@ -93,7 +93,7 @@ fn norm(v: [f64; 3]) -> f64 {
 /// * `os` - current OU process state
 /// # Returns
 /// * `OUState` - updated OU process state
-pub fn update_ou_state(os: OUState) -> OUState {
+pub fn update_ou_state(os: &OUState) -> OUState {
     //calculate mu
     let beta = - norm(os.var.val) / 100.0;
     let gamma = os.config.gamma;
@@ -124,7 +124,7 @@ pub fn update_ou_state(os: OUState) -> OUState {
     };
 
     OUState {
-        config: os.config,
+        config: os.config.clone(),
         var: new_var,
     }
 }
