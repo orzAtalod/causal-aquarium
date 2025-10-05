@@ -9,7 +9,7 @@ use rand_distr::{Normal, Distribution};
 /// OU process variable struct
 /// val: [f64; 3] - the value of the variable
 /// varies from [0, 100] for each variant
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Var {
     pub val: [f64; 3], //3-dimensional variable
 }
@@ -27,7 +27,7 @@ impl default::Default for Var {
 /// delta_t: f64 - the time step
 /// gamma: [[f64; 3]; 3] - the interaction matrix between the 3 variants
 /// the elements in the main diagonal of gamma should be 1.0
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Config {
     pub theta: f64,
     pub sigma: f64,

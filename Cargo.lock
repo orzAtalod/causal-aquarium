@@ -84,6 +84,7 @@ dependencies = [
  "getrandom 0.3.3",
  "rand",
  "rand_distr",
+ "web-sys",
  "yew",
  "yew-hooks",
 ]

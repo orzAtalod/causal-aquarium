@@ -1,8 +1,10 @@
 mod ou_process;
+mod control;
 use yew::prelude::*;
 use yew_hooks::use_interval;
 use rand::{thread_rng, Rng};
 use rand_distr::{Normal, Distribution};
+use control::*;
 
 #[function_component(ProgressBar)]
 fn progress_bar() -> Html {
@@ -38,6 +40,17 @@ fn progress_bar() -> Html {
             </div>
             
             <p>{format!("A: {:.0}%, B: {:.0}%, C: {:.0}%", ou_status.var.val[0], ou_status.var.val[1], ou_status.var.val[2])}</p>
+
+            <ParamCtrl config={ou_status.config.clone()} on_update={
+                {
+                    let ou_status = ou_status.clone();
+                    Callback::from(move |new_config: ou_process::Config| {
+                        let mut new_state = (*ou_status).clone();
+                        new_state.config = new_config;
+                        ou_status.set(new_state);
+                    })
+                }
+            } />
         </div>
     }
 }
