@@ -5,6 +5,7 @@ mod interventions;
 use yew::prelude::*;
 use yew_hooks::use_interval;
 use control::*;
+use interventions::*;
 
 #[function_component(ProgressBar)]
 fn progress_bar() -> Html {
@@ -58,6 +59,17 @@ fn progress_bar() -> Html {
                     Callback::from(move |new_config: ou_process::Config| {
                         let mut new_state = (*ou_status).clone();
                         new_state.config = new_config;
+                        ou_status.set(new_state);
+                    })
+                }
+            } />
+
+            <Interventions var={ou_status.var.clone()} on_update={
+                {
+                    let ou_status = ou_status.clone();
+                    Callback::from(move |new_intervention: ou_process::Intervention| {
+                        let mut new_state = (*ou_status).clone();
+                        new_state.intervention = new_intervention;
                         ou_status.set(new_state);
                     })
                 }

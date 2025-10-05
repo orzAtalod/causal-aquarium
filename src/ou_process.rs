@@ -60,11 +60,11 @@ impl default::Default for Config {
 }
 
 /// OU process interventions struct
-/// index: Some(usize) - the index of the variant to be intervened (0, 1, or 2), None means no intervention
+/// index: Option<usize> - the index of the variant to be intervened (0, 1, or 2), None means no intervention
 /// value: f64 - the value to set the variant to ([0, 100]), ignored when `index.isNone()`
 #[derive(Debug, Clone, PartialEq)]
 pub struct Intervention {
-    pub index: Some(usize),
+    pub index: Option<usize>,
     pub value: f64,
 }
 
