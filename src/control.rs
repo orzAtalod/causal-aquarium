@@ -9,8 +9,6 @@
 /// 
 /// [ ] this file contains ton of repetitive code, which could be optimized by macro or function to improve readability
 /// [ ] add boundary check & non-number input check
-/// 
-/// last changed: Lin Jinghang, 4 October 2025
 
 use yew::prelude::*;
 use crate::ou_process::Config;
