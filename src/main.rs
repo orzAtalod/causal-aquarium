@@ -1,5 +1,7 @@
 mod ou_process;
 mod control;
+mod interventions;
+
 use yew::prelude::*;
 use yew_hooks::use_interval;
 use control::*;

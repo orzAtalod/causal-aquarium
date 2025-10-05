@@ -59,6 +59,22 @@ impl default::Default for Config {
     }
 }
 
+/// OU process interventions struct
+/// index: Some(usize) - the index of the variant to be intervened (0, 1, or 2), None means no intervention
+/// value: f64 - the value to set the variant to ([0, 100]), ignored when `index.isNone()`
+#[derive(Debug, Clone, PartialEq)]
+pub struct Intervention {
+    pub index: Some(usize),
+    pub value: f64,
+}
+
+/// default value is index=None (no intervention), value=0.0
+impl default::Default for Intervention {
+    fn default() -> Self {
+        Intervention { index: None, value: 0.0 }
+    }
+}
+
 /// OU process state struct
 /// config: Config - the configuration of the OU process
 /// var: Var - the variable of the OU process
@@ -67,6 +83,7 @@ impl default::Default for Config {
 pub struct OUState {
     pub config: Config,
     pub var: Var,
+    pub intervention: Intervention,
 }
 
 /// default value is Config::default() and Var::default()
@@ -75,6 +92,7 @@ impl default::Default for OUState {
         OUState {
             config: Config::default(),
             var: Var::default(),
+            intervention: Intervention::default(),
         }
     }
 }
@@ -94,6 +112,9 @@ fn norm(v: [f64; 3]) -> f64 {
 /// * `os` - current OU process state
 /// # Returns
 /// * `OUState` - updated OU process state
+/// # Panics
+/// this function assumes that the input is valid, i.e., the elements in `os.var.index` are in range [0, 3)
+/// if note so, the function may panic
 pub fn update_ou_state(os: &OUState) -> OUState {
     //calculate mu
     let beta = - norm(os.var.val) / 100.0;
@@ -116,7 +137,7 @@ pub fn update_ou_state(os: &OUState) -> OUState {
     let stddev = (sigma*(1.0-e_theta_dt*e_theta_dt)/2.0/theta).sqrt();
     let normal = Normal::new(0.0, stddev).unwrap();
 
-    let new_var = Var {
+    let mut new_var = Var {   //mutable to be invtervented
         val: [
             mu[0] + (old[0] - mu[0]) * e_theta_dt + normal.sample(&mut rng),
             mu[1] + (old[1] - mu[1]) * e_theta_dt + normal.sample(&mut rng),
@@ -124,8 +145,21 @@ pub fn update_ou_state(os: &OUState) -> OUState {
         ],
     };
 
+    if let Some(idx) = os.intervention.index {
+        new_var.val[idx] = os.intervention.value; //didn't check boundary here, assume the input is valid
+    }
+    
+    //hard boundary fix in case the noise term makes it out of range
+    for i in 0..3 {
+        if new_var.val[i] < 0.0 {
+            new_var.val[i] = 0.0;
+        } else if new_var.val[i] > 100.0 {
+            new_var.val[i] = 100.0;
+        }
+    }
+
     OUState {
-        config: os.config.clone(),
         var: new_var,
+        ..os.clone()
     }
 }
