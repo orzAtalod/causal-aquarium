@@ -1,5 +1,7 @@
 /// Ornstein-Uhlenbeck (OU) process network implementation in Rust
+/// 
 /// mathematical provement for this part could be found in `doc/OU_process.md` (written in Chinese)
+/// 
 /// almost everything is public for simplicity
 
 use std::default;
@@ -7,7 +9,9 @@ use rand::Rng;
 use rand_distr::{Normal, Distribution};
 
 /// OU process variable struct
+/// 
 /// val: [f64; 3] - the value of the variable
+/// 
 /// varies from [0, 100] for each variant
 #[derive(Debug, Clone, PartialEq)]
 pub struct Var {
@@ -22,10 +26,15 @@ impl default::Default for Var {
 }
 
 /// OU process configuration struct
+/// 
 /// theta: f64 - the speed of mean reversion
+/// 
 /// sigma: f64 - the variance (sd^2)
+/// 
 /// delta_t: f64 - the time step
+/// 
 /// gamma: [[f64; 3]; 3] - the interaction matrix between the 3 variants
+/// 
 /// the elements in the main diagonal of gamma should be 1.0
 #[derive(Debug, Clone, PartialEq)]
 pub struct Config {
@@ -36,13 +45,21 @@ pub struct Config {
 }
 
 /// default value is:
+/// 
 /// theta: 0.7,
+/// 
 /// sigma: 0.3,
+/// 
 /// delta_t: 1.0,
+/// 
 /// gamma: [
+/// 
 ///     [1.0, 0.2, 0.1],
+/// 
 ///     [0.2, 1.0, 0.3],
+/// 
 ///     [0.1, 0.3, 1.0],
+/// 
 /// ],
 impl default::Default for Config {
     fn default() -> Self {
@@ -60,7 +77,9 @@ impl default::Default for Config {
 }
 
 /// OU process interventions struct
+/// 
 /// index: Option<usize> - the index of the variant to be intervened (0, 1, or 2), None means no intervention
+/// 
 /// value: f64 - the value to set the variant to ([0, 100]), ignored when `index.isNone()`
 #[derive(Debug, Clone, PartialEq)]
 pub struct Intervention {
@@ -76,8 +95,11 @@ impl default::Default for Intervention {
 }
 
 /// OU process state struct
+/// 
 /// config: Config - the configuration of the OU process
+/// 
 /// var: Var - the variable of the OU process
+/// 
 /// use function `update_ou_state` to update the state
 #[derive(Debug, Clone)]
 pub struct OUState {
@@ -98,23 +120,35 @@ impl default::Default for OUState {
 }
 
 /// calculate the L2 norm of a 3-dimensional vector
+/// 
 /// requires each dimension is in range [0, 100]
+/// 
 /// # Arguments
+/// 
 /// * `v` - a 3-dimensional vector
+/// 
 /// # Returns
+/// 
 /// * `f64` - the L2 norm of the vector
 fn norm(v: [f64; 3]) -> f64 {
     (v[0] * v[0] + v[1] * v[1] + v[2] * v[2]).sqrt()
 }
 
 /// OU process state update function
+/// 
 /// # Arguments
+/// 
 /// * `os` - current OU process state
+/// 
 /// # Returns
+/// 
 /// * `OUState` - updated OU process state
+/// 
 /// # Panics
+/// 
 /// this function assumes that the input is valid, i.e., the elements in `os.var.index` are in range [0, 3)
-/// if note so, the function may panic
+/// 
+/// if not so, the function may panic
 pub fn update_ou_state(os: &OUState) -> OUState {
     //calculate mu
     let beta = - norm(os.var.val) / 100.0;
