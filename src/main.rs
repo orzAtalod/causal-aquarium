@@ -2,25 +2,30 @@ mod ou_process;
 mod control;
 mod interventions;
 mod aquarium;
+mod recorder;
 
 use yew::prelude::*;
 use yew_hooks::use_interval;
 use control::*;
 use interventions::*;
 use aquarium::*;
+use recorder::*;
+use ou_process::*;
 
 #[function_component(App)]
 fn app() -> Html {
-    let ou_status = use_state(|| ou_process::OUState::default());
+    let ou_status = use_state(|| OUState::default());
+    let ou_history = use_state(|| Recorder::new(OUState::default()));
 
     use_interval(
         {
             let ou_status = ou_status.clone();
             move || {
                 // the type of ou_status is UseStateHandle<OUState>, which derefs to OUState
-                // the function `update_ou_state` takes &OUState as input
+                // the function `update_ou_state` and `record` takes &OUState as input
                 // so there's a deref + ref to get &OUState
-                ou_status.set(ou_process::update_ou_state(&*ou_status));
+                ou_status.set(update_ou_state(&*ou_status));
+                ou_history.set(ou_history.record(&*ou_status));
             }
         },
         100,
@@ -52,7 +57,7 @@ fn app() -> Html {
                 <ParamCtrl config={ou_status.config.clone()} on_update={
                     {
                         let ou_status = ou_status.clone();
-                        Callback::from(move |new_config: ou_process::Config| {
+                        Callback::from(move |new_config: Config| {
                             let mut new_state = (*ou_status).clone();
                             new_state.config = new_config;
                             ou_status.set(new_state);
@@ -63,7 +68,7 @@ fn app() -> Html {
                 <GammaCtrl config={ou_status.config.clone()} on_update={
                     {
                         let ou_status = ou_status.clone();
-                        Callback::from(move |new_config: ou_process::Config| {
+                        Callback::from(move |new_config: Config| {
                             let mut new_state = (*ou_status).clone();
                             new_state.config = new_config;
                             ou_status.set(new_state);
@@ -74,7 +79,7 @@ fn app() -> Html {
                 <Interventions var={ou_status.var.clone()} on_update={
                     {
                         let ou_status = ou_status.clone();
-                        Callback::from(move |new_intervention: ou_process::Intervention| {
+                        Callback::from(move |new_intervention: Intervention| {
                             let mut new_state = (*ou_status).clone();
                             new_state.intervention = new_intervention;
                             ou_status.set(new_state);
